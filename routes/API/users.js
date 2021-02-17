@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const {validationResult} = require("express-validator");
 const {check} = require("express-validator");
+const gravatar = require('gravatar');
 
 // @route     GET api/user
 // @desc      Get all users
@@ -38,9 +39,18 @@ router.post('/', [
             return res.status(400).json({msg: 'User already exists'});
         }
 
-        user = new User({name,
+        // create user avatar
+        const avatar = gravatar.url(email, {
+            s: '200',
+            r: 'pg',
+            d: 'mp'
+        });
+
+        user = new User({
+            name,
             email,
-            password});
+            password,
+            avatar});
 
         const salt = await bcrypt.genSalt(10);
 
@@ -54,9 +64,13 @@ router.post('/', [
             }
         }
 
-        jwt.sign(payload, config.get('jwtSecret'), {
+        jwt.sign(
+            payload,
+            config.get('jwtSecret'),
+            {
             expiresIn: 360000
-        }, (err, token) => {
+        },
+            (err, token) => {
             if(err) throw err;
             res.json({token});
         });
