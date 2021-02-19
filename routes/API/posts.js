@@ -10,6 +10,19 @@ const User = require('../../models/User');
 // @route     GET api/posts
 // @desc      Get all posts
 // @access    public
+router.get('/all', async (req, res) => {
+    try {
+        const posts = await Post.find({post: res.data}).sort({date: -1});
+        res.json(posts);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route     GET api/posts
+// @desc      Get all posts
+// @access    public
 router.get('/', auth, async (req, res) => {
     try {
         const posts = await Post.find({user: req.user.id}).sort({date: -1});
@@ -23,10 +36,10 @@ router.get('/', auth, async (req, res) => {
 // @route     POST api/posts
 // @desc      Add new posts
 // @access    public
-router.post('/', [auth, [
+router.post('/', auth, [
     check('title', 'Title is required').not().isEmpty(),
     check('description', 'Description is required').not().isEmpty()
-]], async (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()});
